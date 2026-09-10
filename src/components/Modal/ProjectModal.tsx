@@ -36,10 +36,10 @@ export function ProjectModal({ openId, onClose }: ProjectModalProps) {
       aria-label={project?.title ?? 'Detalle de proyecto'}
     >
       <div className="morph-backdrop" onClick={onClose} />
-      <div className="morph-sheet glass-panel border border-white/15 p-8 shadow-2xl sm:p-12">
+      <div className="morph-sheet glass-panel border border-white/15 p-10 shadow-2xl sm:p-14">
         <button
           onClick={onClose}
-          className="absolute right-6 top-6 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
+          className="absolute right-5 top-5 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
           title="Cerrar modal"
           aria-label="Cerrar"
         >

@@ -40,6 +40,10 @@ export interface PhysicsBody {
   height: number;
   mass: number;
   isDragging: boolean;
+  /** Cursor encima: se suspende la repulsión para permitir interacción. */
+  isHovered: boolean;
+  /** Fase única para la deriva ambiental (respiración). */
+  driftPhase: number;
   /** Elemento DOM asociado, escrito directamente para evitar re-renders. */
   element: HTMLElement | null;
   dragOffsetX: number;

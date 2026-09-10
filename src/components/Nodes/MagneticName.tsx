@@ -52,22 +52,24 @@ export function MagneticName({ name }: { name: string }) {
     };
   }, [name]);
 
+  // Separa en palabras para que el salto de línea ocurra entre palabras
+  // (no en mitad de un nombre) y así "FERRAN PILES LABLANCA" siempre quepa.
+  const words = name.split(' ');
+
   return (
     <div
       ref={containerRef}
-      className="flex flex-wrap items-baseline gap-1 font-display text-4xl font-extrabold tracking-tight text-white select-none sm:text-6xl"
+      className="flex flex-wrap items-baseline gap-x-4 gap-y-1 font-display text-3xl font-extrabold leading-[1.05] tracking-tight text-white select-none sm:text-4xl md:text-5xl"
     >
-      {name.split('').map((char, i) =>
-        char === ' ' ? (
-          <span key={i} className="inline-block">
-            {'\u00A0\u00A0'}
-          </span>
-        ) : (
-          <span key={i} data-letter className="letter-body">
-            {char}
-          </span>
-        ),
-      )}
+      {words.map((word, wi) => (
+        <span key={wi} className="flex items-baseline whitespace-nowrap">
+          {word.split('').map((char, ci) => (
+            <span key={`${wi}-${ci}`} data-letter className="letter-body">
+              {char}
+            </span>
+          ))}
+        </span>
+      ))}
     </div>
   );
 }

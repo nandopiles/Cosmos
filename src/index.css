@@ -15,30 +15,30 @@
 
 /* =================================================================
    BASE
+   Nota: Tailwind v4 (Preflight) ya aplica un reset. NO usamos un
+   reset global de padding/margin porque, al estar fuera de @layer,
+   anularia todas las utilidades de espaciado de Tailwind (que viven
+   en @layer utilities).
    ================================================================= */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  -webkit-user-select: none;
-  user-select: none;
-}
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+    width: 100%;
+  }
 
-html,
-body,
-#root {
-  height: 100%;
-  width: 100%;
-}
-
-body {
-  font-family: var(--font-sans);
-  background-color: var(--color-void);
-  color: #e2e8f0;
-  overflow: hidden;
-  cursor: default;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--color-void);
+    color: #e2e8f0;
+    overflow: hidden;
+    cursor: default;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
 }
 
 .font-display {
@@ -99,6 +99,18 @@ body {
 }
 .phys-node:active {
   cursor: grabbing;
+}
+
+/* Los controles de formulario dentro de un nodo recuperan interacción normal:
+   cursor de texto, selección y gestos táctiles propios. */
+.phys-node :is(input, textarea, select) {
+  cursor: text;
+  touch-action: auto;
+  -webkit-user-select: text;
+  user-select: text;
+}
+.phys-node :is(button, a, label) {
+  cursor: pointer;
 }
 
 .aura-glow {
@@ -185,15 +197,17 @@ body {
 }
 .morph-sheet {
   position: absolute;
-  max-width: 900px;
-  width: 92vw;
-  max-height: 88vh;
+  max-width: 820px;
+  width: min(90vw, 820px);
+  max-height: min(86vh, 720px);
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%) scale(0.92);
-  border-radius: 36px;
+  border-radius: 32px;
   transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
   overflow-y: auto;
+  /* Espacio de seguridad respecto a los bordes en pantallas pequeñas. */
+  margin: 24px;
 }
 .morph-modal.is-active .morph-sheet {
   transform: translate(-50%, -50%) scale(1);
@@ -238,6 +252,28 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
+}
+
+/* Chaos slider thumb */
+.chaos-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 9999px;
+  background: #bef264;
+  border: 2px solid #07090e;
+  box-shadow: 0 0 8px rgba(190, 242, 100, 0.6);
+  cursor: pointer;
+}
+.chaos-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 9999px;
+  background: #bef264;
+  border: 2px solid #07090e;
+  box-shadow: 0 0 8px rgba(190, 242, 100, 0.6);
+  cursor: pointer;
 }
 
 /* Utility: hide scrollbar on teleport pill row */

@@ -89,9 +89,16 @@ export function useLivingCanvas(reducedMotion: boolean) {
     audioEngine.microClick(480, 'sine', 0.05, 0.1);
   }, []);
 
-  const scatter = useCallback(() => {
-    worldRef.current!.scatter();
-    audioEngine.whoosh(24);
+  /** Marca un nodo como bajo el cursor (suspende su repulsión). */
+  const setNodeHovered = useCallback((id: string, hovered: boolean) => {
+    worldRef.current!.setHovered(id, hovered);
+  }, []);
+
+  /** Big Bang: reubica todo el cosmos con una explosión desde el centro. */
+  const bigBang = useCallback(() => {
+    worldRef.current!.bigBang();
+    audioEngine.whoosh(36);
+    audioEngine.microClick(90, 'sine', 0.4, 0.3);
   }, []);
 
   const teleport = useCallback((target: TeleportTarget) => {
@@ -190,6 +197,8 @@ export function useLivingCanvas(reducedMotion: boolean) {
       camera.step();
       worldEl.style.transform =
         `translate(${camera.state.x}px, ${camera.state.y}px) scale(${camera.state.zoom})`;
+      // Parallax sutil del grid: se mueve a ~40% de la cámara para dar profundidad.
+      worldEl.style.backgroundPosition = `${camera.state.x * 0.4}px ${camera.state.y * 0.4}px`;
 
       // 2. Física (usa el ratón en world space).
       const wm = camera.screenToWorld(mouse.current.x, mouse.current.y);
@@ -237,7 +246,8 @@ export function useLivingCanvas(reducedMotion: boolean) {
     registerNode,
     registerMinimap,
     beginNodeDrag,
-    scatter,
+    setNodeHovered,
+    bigBang,
     teleport,
     zoomBy,
     hud,

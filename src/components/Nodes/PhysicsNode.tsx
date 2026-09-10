@@ -19,8 +19,8 @@ interface PhysicsNodeProps {
   onActivate?: () => void;
 }
 
-/** Etiquetas que NO deben iniciar arrastre (para no bloquear formularios/links). */
-const INTERACTIVE_TAGS = new Set(['INPUT', 'TEXTAREA', 'BUTTON', 'A', 'SELECT', 'LABEL']);
+/** Selector de elementos que NO deben iniciar arrastre (formularios/links). */
+const INTERACTIVE_SELECTOR = 'input, textarea, button, a, select, label, [data-no-drag]';
 
 /**
  * Cuerpo físico genérico del lienzo. Cada tarjeta/nodo se envuelve en él.
@@ -40,7 +40,7 @@ export function PhysicsNode({
   children,
   onActivate,
 }: PhysicsNodeProps) {
-  const { registerNode, beginNodeDrag } = useCanvas();
+  const { registerNode, beginNodeDrag, setNodeHovered } = useCanvas();
   const elRef = useRef<HTMLDivElement | null>(null);
   const downPos = useRef({ x: 0, y: 0 });
 
@@ -51,8 +51,8 @@ export function PhysicsNode({
   }, [registerNode, id, category, left, top, index]);
 
   const handlePointerDown = (e: PointerEvent<HTMLDivElement>) => {
-    const target = e.target as HTMLElement;
-    if (INTERACTIVE_TAGS.has(target.tagName)) return;
+    // No iniciar arrastre si el gesto empieza en un control interactivo.
+    if ((e.target as HTMLElement).closest(INTERACTIVE_SELECTOR)) return;
     e.stopPropagation();
     downPos.current = { x: e.clientX, y: e.clientY };
     beginNodeDrag(id, e.clientX, e.clientY);
@@ -74,6 +74,8 @@ export function PhysicsNode({
       style={{ top, left, width }}
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
+      onPointerEnter={() => setNodeHovered(id, true)}
+      onPointerLeave={() => setNodeHovered(id, false)}
     >
       {withAura && <div className="aura-glow" />}
       {children}

@@ -20,6 +20,7 @@ import { StatusBar } from '@/components/HUD/StatusBar';
 import { Toolbar } from '@/components/HUD/Toolbar';
 import { Minimap } from '@/components/HUD/Minimap';
 import { ZoomControls } from '@/components/HUD/ZoomControls';
+import { IntensityControl } from '@/components/HUD/IntensityControl';
 import { TeleportPills } from '@/components/HUD/TeleportPills';
 import { ProjectModal } from '@/components/Modal/ProjectModal';
 
@@ -86,7 +87,10 @@ export default function App() {
       <TeleportPills />
       <div className="fixed bottom-6 right-8 z-50 flex flex-col items-end gap-3">
         <Minimap />
-        <ZoomControls />
+        <div className="flex items-center gap-3">
+          <IntensityControl />
+          <ZoomControls />
+        </div>
       </div>
 
       {/* Mundo infinito */}

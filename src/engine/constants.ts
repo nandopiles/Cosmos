@@ -33,6 +33,10 @@ export const PHYSICS = {
   friction: 0.9,
   /** Amortiguación de la velocidad al arrastrar (para el "throw"). */
   throwDamping: 0.75,
+  /** Rigidez de resolución de colisiones entre cuerpos. */
+  collisionStiffness: 0.5,
+  /** Amplitud de la deriva ambiental (flotación espacial) en px. */
+  driftAmplitude: 26,
 } as const;
 
 /** Masas por categoría. */
