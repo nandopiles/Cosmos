@@ -94,11 +94,11 @@ export function useLivingCanvas(reducedMotion: boolean) {
     worldRef.current!.setHovered(id, hovered);
   }, []);
 
-  /** Big Bang: reubica todo el cosmos con una explosión desde el centro. */
-  const bigBang = useCallback(() => {
-    worldRef.current!.bigBang();
-    audioEngine.whoosh(36);
-    audioEngine.microClick(90, 'sine', 0.4, 0.3);
+  /** Reset: devuelve todas las cards a su posición original de forma fiable. */
+  const resetLayout = useCallback(() => {
+    worldRef.current!.reset();
+    audioEngine.microClick(520, 'sine', 0.08, 0.12);
+    audioEngine.microClick(720, 'sine', 0.12, 0.1);
   }, []);
 
   const teleport = useCallback((target: TeleportTarget) => {
@@ -247,7 +247,7 @@ export function useLivingCanvas(reducedMotion: boolean) {
     registerMinimap,
     beginNodeDrag,
     setNodeHovered,
-    bigBang,
+    resetLayout,
     teleport,
     zoomBy,
     hud,

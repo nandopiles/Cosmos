@@ -81,6 +81,24 @@ npm run preview  # previsualizar el build
 
 ---
 
+## 📬 Formulario de contacto
+
+El formulario envía los mensajes por **Formspree** (sin backend propio). Para activarlo:
+
+1. Crea una cuenta en [formspree.io](https://formspree.io) con el correo destino
+   (`nandopiles...@gmail.com`) y crea un formulario nuevo.
+2. Copia el endpoint que te dan (formato `https://formspree.io/f/xxxxxxxx`).
+3. Crea un archivo `.env` en la raíz (o edita el existente) con:
+
+   ```
+   VITE_CONTACT_ENDPOINT=https://formspree.io/f/xxxxxxxx
+   ```
+
+4. Reinicia el servidor de desarrollo.
+
+El correo destino se configura en el panel de Formspree, **no** en el código, para
+no exponerlo a scrapers. El `.env` está en `.gitignore`: nunca se sube al repo.
+
 ## 🎨 Personalización
 
 Todo el contenido vive en `src/data/`:

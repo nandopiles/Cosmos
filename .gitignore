@@ -21,6 +21,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+# Variables de entorno (contienen el endpoint del formulario de contacto)
+.env
+.env.*
+!.env.example
+
 # Archivos fuente del diseño original de Google Stitch (no forman parte de la app)
 code.html
 screen.png

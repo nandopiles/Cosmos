@@ -1,6 +1,6 @@
 import { useCanvas } from '@/context/CanvasContext';
 import { useAudio } from '@/hooks/useAudio';
-import { Bulb, Refresh, Speaker } from '@/components/icons';
+import { Bulb, Home, Speaker } from '@/components/icons';
 
 interface ToolbarProps {
   flashlightActive: boolean;
@@ -8,10 +8,10 @@ interface ToolbarProps {
 }
 
 /**
- * Barra superior derecha: linterna, audio háptico y "gravedad cero" (scatter).
+ * Barra superior derecha: linterna, audio háptico, Big Bang y Reset.
  */
 export function Toolbar({ flashlightActive, onToggleFlashlight }: ToolbarProps) {
-  const { scatter } = useCanvas();
+  const { resetLayout } = useCanvas();
   const { enabled: audioOn, toggle: toggleAudio, click } = useAudio();
 
   return (
@@ -38,12 +38,12 @@ export function Toolbar({ flashlightActive, onToggleFlashlight }: ToolbarProps) 
       </button>
 
       <button
-        onClick={scatter}
+        onClick={resetLayout}
         className="glass-btn flex items-center gap-2 rounded-full px-3.5 py-2 font-mono text-xs shadow-lg"
-        title="Recomponer posiciones con una onda expansiva"
+        title="Reset: devuelve las cards a su posición original"
       >
-        <Refresh className="h-3.5 w-3.5" />
-        <span className="hidden sm:inline">Gravedad Cero</span>
+        <Home className="h-3.5 w-3.5" />
+        <span className="hidden sm:inline">Reset</span>
       </button>
     </div>
   );

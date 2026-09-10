@@ -1,128 +1,218 @@
-import { useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { profile } from '@/data/profile';
-import { useCanvas } from '@/context/CanvasContext';
 import { audioEngine } from '@/engine/audio';
-import { Send } from '@/components/icons';
+import { sendContactMessage } from '@/services/contact';
 import { PhysicsNode } from './PhysicsNode';
-import { SignalWave } from './SignalWave';
 
-const ROSE = '#f43f5e';
+type Phase = 'idle' | 'sending' | 'sent' | 'error';
+
+/** Espera helper para escalonar los pasos del log de forma legible. */
+const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 /**
- * "Consola Transmisora de Señal": reinvención del formulario de contacto como
- * un panel tipo osciloscopio. La onda reacciona en vivo a lo que se escribe,
- * el botón emite un pulso sonoro proporcional al mensaje y, al transmitir,
- * dispara una onda expansiva en el lienzo y registra un log.
+ * "Terminal de composición": el formulario de contacto reinterpretado como una
+ * consola de desarrollador. Escribir un mensaje se siente técnico y elegante:
+ *  - Encabezado tipo ventana de terminal (semáforo mac).
+ *  - Metadatos en vivo del mensaje (caracteres, palabras, tiempo de lectura).
+ *  - Al enviar: secuencia de "handshake" con log línea a línea y barra de
+ *    progreso, cerrando con un 200 OK. Sin caos, sin explosiones.
  */
 export function ContactCard({ index }: { index: number }) {
-  const { scatter } = useCanvas();
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
-  const [sent, setSent] = useState(false);
-  const [pulseKey, setPulseKey] = useState(0);
+  const [phase, setPhase] = useState<Phase>('idle');
+  const [logLines, setLogLines] = useState<string[]>([]);
+  const [progress, setProgress] = useState(0);
+  const [errorMsg, setErrorMsg] = useState('');
+  const alive = useRef(true);
 
-  // Energía de la onda: cuanto más largo el mensaje, más viva la señal.
-  const energy = useMemo(() => {
-    const len = email.length + message.length;
-    return Math.min(1, len / 120);
-  }, [email, message]);
+  // Metadatos técnicos del mensaje, calculados en vivo.
+  const stats = useMemo(() => {
+    const chars = message.length;
+    const words = message.trim() ? message.trim().split(/\s+/).length : 0;
+    const readSec = Math.max(1, Math.round((words / 200) * 60));
+    return { chars, words, readSec };
+  }, [message]);
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  // Marca el componente como desmontado para no actualizar estado tras ello.
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
+
+  const pushLog = async (line: string, pct: number, freq: number) => {
+    if (!alive.current) return;
+    setLogLines((prev) => [...prev, line]);
+    setProgress(pct);
+    audioEngine.microClick(freq, 'sine', 0.04, 0.07);
+    await wait(360);
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Frecuencia del pulso según la longitud del mensaje (feedback sonoro).
-    const freq = 440 + Math.min(400, message.length * 6);
-    audioEngine.microClick(freq, 'sine', 0.12, 0.25);
-    setPulseKey((k) => k + 1);
-    setSent(true);
-    setEmail('');
-    setMessage('');
-    scatter();
+    if (phase === 'sending') return;
+
+    setPhase('sending');
+    setLogLines([]);
+    setProgress(0);
+    setErrorMsg('');
+
+    // La secuencia de "handshake" corre mientras el envío real está en curso;
+    // el resultado (200 OK / ERROR) depende de la respuesta del servidor.
+    const sendPromise = sendContactMessage({ email, message });
+
+    await pushLog('Estableciendo canal seguro…', 20, 360);
+    await pushLog('Handshake TLS ✓', 40, 450);
+    await pushLog(`Empaquetando payload (${stats.chars} bytes)…`, 60, 540);
+    await pushLog('Enrutando al destinatario…', 80, 630);
+
+    const result = await sendPromise;
+    if (!alive.current) return;
+
+    if (result.ok) {
+      await pushLog('200 OK · mensaje entregado', 100, 720);
+      await wait(300);
+      if (!alive.current) return;
+      setPhase('sent');
+      setEmail('');
+      setMessage('');
+    } else {
+      setProgress(100);
+      setErrorMsg(result.error);
+      audioEngine.microClick(180, 'triangle', 0.12, 0.15);
+      setPhase('error');
+    }
+  };
+
+  const reset = () => {
+    setPhase('idle');
+    setLogLines([]);
+    setProgress(0);
+    setErrorMsg('');
   };
 
   return (
     <PhysicsNode id="node-contact" category="contact" top={1750} left={2600} width={500} index={index} withAura>
-      <div className="glass-panel relative overflow-hidden rounded-[40px] border border-rose-400/25 p-9 md:p-10">
-        {/* halo decorativo */}
-        <div className="pointer-events-none absolute -left-16 -top-16 h-48 w-48 rounded-full bg-rose-500/10 blur-3xl" />
-
-        <div className="mb-5 flex items-center justify-between">
-          <span className="font-mono text-xs tracking-wider text-rose-400">CONEXIÓN DIRECTA // TRANSMISOR</span>
-          <span className="flex items-center gap-2 font-mono text-[10px] text-rose-300/80">
-            <span className="h-2 w-2 animate-ping rounded-full bg-rose-400" />
-            EN VIVO
-          </span>
+      <div className="glass-panel relative overflow-hidden rounded-[28px] border border-white/10 p-2">
+        {/* Barra de título tipo terminal */}
+        <div className="flex items-center gap-2 rounded-t-[20px] border-b border-white/10 bg-white/[0.03] px-4 py-2.5">
+          <span className="h-3 w-3 rounded-full bg-rose-400/80" />
+          <span className="h-3 w-3 rounded-full bg-amber-400/80" />
+          <span className="h-3 w-3 rounded-full bg-emerald-400/80" />
+          <span className="ml-2 font-mono text-[11px] text-slate-400">contacto ~ compose.sh</span>
+          <span className="ml-auto font-mono text-[10px] text-slate-500">utf-8</span>
         </div>
 
-        <h3 className="mb-2 font-display text-2xl font-bold text-white">¿Iniciamos una colisión creativa?</h3>
-        <p className="mb-5 text-xs leading-relaxed text-slate-400">
-          Sintoniza tu señal. El transmisor reacciona a tu mensaje en tiempo real.
-        </p>
+        <div className="p-6">
+          <h3 className="mb-1 font-display text-xl font-bold text-white">
+            <span className="text-rose-400">const</span> mensaje ={' '}
+            <span className="text-emerald-300">nuevoProyecto</span>()
+          </h3>
+          <p className="mb-5 font-mono text-xs leading-relaxed text-slate-400">
+            {'// Cuéntame qué quieres construir. Respondo en < 24h.'}
+          </p>
 
-        {/* Osciloscopio */}
-        <div className="mb-5 rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3">
-          <div className="mb-1 flex items-center justify-between font-mono text-[10px] text-slate-500">
-            <span>SEÑAL DE SALIDA</span>
-            <span className="text-rose-300/70">AMP {Math.round(energy * 100)}%</span>
-          </div>
-          <SignalWave energy={energy} color={ROSE} pulseKey={pulseKey} />
-        </div>
+          {(phase === 'idle' || phase === 'sending' || phase === 'error') && (
+            <form onSubmit={handleSubmit} className="space-y-4" aria-busy={phase === 'sending'}>
+              <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-slate-950/50 px-3 py-2.5 transition focus-within:border-rose-400/50">
+                <span className="font-mono text-xs text-rose-400/80">~$</span>
+                <input
+                  type="email"
+                  required
+                  autoComplete="email"
+                  disabled={phase === 'sending'}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="tu@correo.com"
+                  className="w-full bg-transparent font-mono text-sm text-white placeholder-slate-600 focus:outline-none disabled:opacity-50"
+                />
+              </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="contact-email" className="mb-1.5 block font-mono text-[11px] text-slate-400">
-              TU SEÑAL / EMAIL
-            </label>
-            <input
-              id="contact-email"
-              type="email"
-              required
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="tu@estudio.com"
-              className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-slate-600 transition focus:border-rose-400/60 focus:bg-white/[0.07] focus:outline-none focus:ring-2 focus:ring-rose-400/20"
-            />
-          </div>
-          <div>
-            <label htmlFor="contact-message" className="mb-1.5 block font-mono text-[11px] text-slate-400">
-              FRECUENCIA / PROYECTO
-            </label>
-            <textarea
-              id="contact-message"
-              rows={3}
-              required
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Cuéntame sobre la experiencia que imaginas..."
-              className="w-full resize-none rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-slate-600 transition focus:border-rose-400/60 focus:bg-white/[0.07] focus:outline-none focus:ring-2 focus:ring-rose-400/20"
-            />
-          </div>
-          <button
-            type="submit"
-            className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-rose-500 to-amber-500 py-3.5 font-display text-xs font-bold uppercase tracking-wider text-slate-950 shadow-lg transition hover:from-rose-400 hover:to-amber-400"
-          >
-            <span>Transmitir Señal</span>
-            <Send className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" />
-          </button>
-        </form>
+              <div className="rounded-xl border border-white/10 bg-slate-950/50 px-3 py-2.5 transition focus-within:border-rose-400/50">
+                <textarea
+                  rows={3}
+                  required
+                  disabled={phase === 'sending'}
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="> Escribe tu mensaje…"
+                  className="w-full resize-none bg-transparent font-mono text-sm text-white placeholder-slate-600 focus:outline-none disabled:opacity-50"
+                />
+                {/* Metadatos en vivo */}
+                <div className="mt-2 flex items-center gap-4 border-t border-white/5 pt-2 font-mono text-[10px] text-slate-500">
+                  <span>{stats.chars} chars</span>
+                  <span>{stats.words} palabras</span>
+                  <span>~{stats.readSec}s lectura</span>
+                </div>
+              </div>
 
-        {sent && (
-          <div className="mt-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3.5 font-mono text-xs text-emerald-300">
-            <div className="flex items-center gap-2">
-              <span className="text-emerald-400">›</span> Señal transmitida. Pulso registrado en el lienzo.
+              {phase === 'sending' ? (
+                <div className="space-y-2">
+                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-rose-500 to-amber-400 transition-all duration-300"
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                  <div className="min-h-[72px] rounded-xl bg-slate-950/60 p-3 font-mono text-[11px] leading-relaxed text-emerald-300">
+                    {logLines.map((l, i) => (
+                      <div key={i}>
+                        <span className="text-slate-600">›</span> {l}
+                      </div>
+                    ))}
+                    <span className="inline-block h-3 w-1.5 animate-pulse bg-emerald-400 align-middle" />
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {phase === 'error' && (
+                    <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-3 font-mono text-[11px] leading-relaxed text-rose-300">
+                      <span className="font-bold">ERROR ›</span> {errorMsg}
+                    </div>
+                  )}
+                  <button
+                    type="submit"
+                    className="group flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 py-3 font-mono text-xs font-bold text-slate-950 shadow-lg transition hover:from-rose-400 hover:to-amber-400"
+                  >
+                    <span className="text-slate-900/70">$</span>{' '}
+                    {phase === 'error' ? 'reintentar --envio' : 'enviar --mensaje'}
+                  </button>
+                </div>
+              )}
+            </form>
+          )}
+
+          {phase === 'sent' && (
+            <div className="space-y-4">
+              <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 font-mono text-xs text-emerald-300">
+                <div className="mb-2 flex items-center gap-2 font-bold">
+                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-emerald-400 text-[10px] text-slate-950">
+                    ✓
+                  </span>
+                  200 OK
+                </div>
+                <div className="text-emerald-400/70">
+                  Mensaje entregado · [{new Date().toLocaleTimeString()}]
+                </div>
+              </div>
+              <button
+                onClick={reset}
+                className="w-full rounded-xl border border-white/10 bg-white/5 py-2.5 font-mono text-xs text-slate-300 transition hover:bg-white/10"
+              >
+                $ nuevo --mensaje
+              </button>
             </div>
-            <div className="mt-1 text-[10px] text-emerald-400/60">
-              [{new Date().toLocaleTimeString()}] STATUS 200 · onda expansiva emitida
-            </div>
-          </div>
-        )}
+          )}
 
-        <div className="mt-6 flex items-center justify-center gap-6 border-t border-white/10 pt-5 font-mono text-xs text-slate-400">
-          {profile.social.map((s) => (
-            <a key={s.label} href={s.url} target="_blank" rel="noreferrer" className="transition hover:text-white">
-              {s.label}
-            </a>
-          ))}
+          <div className="mt-6 flex items-center justify-center gap-6 border-t border-white/10 pt-5 font-mono text-xs text-slate-400">
+            {profile.social.map((s) => (
+              <a key={s.label} href={s.url} target="_blank" rel="noreferrer" className="transition hover:text-white">
+                {s.label}
+              </a>
+            ))}
+          </div>
         </div>
       </div>
     </PhysicsNode>

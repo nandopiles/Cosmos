@@ -1,12 +1,12 @@
 import { profile } from '@/data/profile';
 import { useCanvas } from '@/context/CanvasContext';
-import { Explosion } from '@/components/icons';
+import { Home } from '@/components/icons';
 import { PhysicsNode } from './PhysicsNode';
 import { MagneticName } from './MagneticName';
 
 /** Tarjeta principal de identidad con el nombre magnético y la bio. */
 export function IdentityCard({ index }: { index: number }) {
-  const { scatter } = useCanvas();
+  const { resetLayout } = useCanvas();
 
   return (
     <PhysicsNode id="node-identity" category="identity" top={1700} left={1800} width={680} index={index} withAura>
@@ -32,11 +32,11 @@ export function IdentityCard({ index }: { index: number }) {
 
         <div className="flex flex-wrap items-center gap-3 border-t border-white/10 pt-4">
           <button
-            onClick={scatter}
-            className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 font-mono text-xs text-slate-300 transition hover:bg-white/10"
+            onClick={resetLayout}
+            className="flex items-center gap-2 rounded-full border border-lime-400/30 bg-lime-400/10 px-4 py-2 font-mono text-xs text-lime-300 transition hover:bg-lime-400/20"
           >
-            <Explosion className="h-3.5 w-3.5 text-lime-400" />
-            Empujar todo con onda expansiva
+            <Home className="h-3.5 w-3.5 text-lime-400" />
+            Recomponer el cosmos
           </button>
           <span className="font-mono text-xs text-slate-500">• Arrastra desde cualquier borde</span>
         </div>

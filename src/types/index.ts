@@ -27,9 +27,12 @@ export interface NodePlacement {
 export interface PhysicsBody {
   id: string;
   category: NodeCategory;
-  /** Posición de reposo (home) a la que el muelle devuelve el cuerpo. */
+  /** Posición de reposo (home) a la que el muelle devuelve el cuerpo. Mutable (Big Bang). */
   homeX: number;
   homeY: number;
+  /** Posición fija del elemento en el DOM (CSS top/left). El transform es relativo a esta. */
+  baseX: number;
+  baseY: number;
   /** Posición actual simulada. */
   x: number;
   y: number;
@@ -42,6 +45,8 @@ export interface PhysicsBody {
   isDragging: boolean;
   /** Cursor encima: se suspende la repulsión para permitir interacción. */
   isHovered: boolean;
+  /** Volviendo a su posición base (reset): ignora repulsión/deriva hasta llegar. */
+  isReturning: boolean;
   /** Fase única para la deriva ambiental (respiración). */
   driftPhase: number;
   /** Elemento DOM asociado, escrito directamente para evitar re-renders. */

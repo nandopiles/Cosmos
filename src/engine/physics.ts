@@ -1,5 +1,5 @@
 import type { NodeCategory, PhysicsBody } from '@/types';
-import { MASS, PHYSICS, WORLD_SIZE } from './constants';
+import { MASS, PHYSICS } from './constants';
 
 export interface BodyInit {
   id: string;
@@ -39,6 +39,8 @@ export class PhysicsWorld {
       category: init.category,
       homeX: init.homeX,
       homeY: init.homeY,
+      baseX: init.homeX,
+      baseY: init.homeY,
       // Dispersión + caída inicial escalonada para una entrada con "gravedad".
       x: init.homeX + (Math.random() - 0.5) * 40,
       y: init.homeY - 250 - init.index * 40,
@@ -49,6 +51,7 @@ export class PhysicsWorld {
       mass,
       isDragging: false,
       isHovered: false,
+      isReturning: false,
       driftPhase: Math.random() * Math.PI * 2,
       element: null,
       dragOffsetX: 0,
@@ -74,6 +77,7 @@ export class PhysicsWorld {
   startDrag(id: string, worldX: number, worldY: number): void {
     const b = this.byId.get(id);
     if (!b) return;
+    b.isReturning = false; // agarrar cancela el retorno
     b.isDragging = true;
     b.vx = 0;
     b.vy = 0;
@@ -114,57 +118,22 @@ export class PhysicsWorld {
   }
 
   /**
-   * BIG BANG: reubica todos los cuerpos en un nuevo cosmos.
+   * RESET: devuelve todas las cards a su posición original de forma FIABLE.
    *
-   * A diferencia de un simple empujón, esto reasigna la posición "home" de
-   * cada card a un nuevo punto (distribuido en anillos alrededor del centro
-   * del mundo) y lanza cada cuerpo con un impulso radial fuerte desde el
-   * origen. El resultado: una explosión que de verdad cambia el layout, y
-   * luego los muelles asientan las cards en sus nuevas casas.
+   * Activa un modo "returning" por cuerpo en el que se ignora la repulsión del
+   * cursor y la deriva ambiental, y se aplica un muelle fuerte hacia la base.
+   * El modo se desactiva solo cuando el cuerpo llega y se detiene, así ninguna
+   * card puede quedarse "enganchada" por las físicas normales.
    */
-  bigBang(): void {
-    const center = WORLD_SIZE / 2;
-    const movable = this.bodies.filter((b) => b.category !== 'skill-satellite');
-    const satellites = this.bodies.filter((b) => b.category === 'skill-satellite');
-
-    // Reparte las cards grandes en un anillo con jitter; los satélites en un
-    // anillo interior más denso.
-    this.placeInRing(movable, center, 780, 320);
-    this.placeInRing(satellites, center, 430, 180);
-
-    // Impulso radial explosivo desde el centro del mundo.
+  reset(): void {
     for (const b of this.bodies) {
-      const cx = b.x + b.width / 2;
-      const cy = b.y + b.height / 2;
-      let dx = cx - center;
-      let dy = cy - center;
-      let dist = Math.hypot(dx, dy);
-      if (dist < 1) {
-        const a = Math.random() * Math.PI * 2;
-        dx = Math.cos(a);
-        dy = Math.sin(a);
-        dist = 1;
-      }
-      const force = (Math.random() * 40 + 55) / b.mass;
-      b.vx += (dx / dist) * force;
-      b.vy += (dy / dist) * force;
+      b.homeX = b.baseX;
+      b.homeY = b.baseY;
+      b.isReturning = true;
+      // Frena la inercia actual para un retorno limpio.
+      b.vx *= 0.2;
+      b.vy *= 0.2;
     }
-  }
-
-  /** Coloca los homes de un grupo en un anillo alrededor del centro. */
-  private placeInRing(group: PhysicsBody[], center: number, radius: number, jitter: number): void {
-    const n = group.length;
-    if (n === 0) return;
-    // Barajado del orden angular para que no queden por categoría.
-    const angleOffset = Math.random() * Math.PI * 2;
-    group.forEach((b, i) => {
-      const angle = angleOffset + (i / n) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
-      const r = radius + (Math.random() - 0.5) * jitter;
-      const hx = center + Math.cos(angle) * r - b.width / 2;
-      const hy = center + Math.sin(angle) * r - b.height / 2;
-      b.homeX = hx;
-      b.homeY = hy;
-    });
   }
 
   /**
@@ -178,40 +147,62 @@ export class PhysicsWorld {
 
     for (const b of this.bodies) {
       if (!b.isDragging) {
-        const centerX = b.x + b.width / 2;
-        const centerY = b.y + b.height / 2;
+        if (b.isReturning) {
+          // MODO RETORNO (reset): muelle fuerte al home base, sin repulsión ni
+          // deriva. Así la card no puede reengancharse y llega con seguridad.
+          b.vx += (b.homeX - b.x) * 0.14;
+          b.vy += (b.homeY - b.y) * 0.14;
+          b.vx *= 0.78;
+          b.vy *= 0.78;
+          b.x += b.vx;
+          b.y += b.vy;
 
-        // 1. Repulsión magnética del cursor (siempre activa: sensación espacial).
-        //    Se suspende SOLO si el cursor está sobre la card, para poder
-        //    interactuar con su contenido (inputs, botones) sin que huya.
-        if (!b.isHovered) {
-          const dx = centerX - worldMouseX;
-          const dy = centerY - worldMouseY;
-          const dist = Math.hypot(dx, dy);
-          if (dist < repulsionRadius && dist > 1) {
-            const push = (1 - dist / repulsionRadius) * (repulsionStrength / b.mass);
-            b.vx += (dx / dist) * push;
-            b.vy += (dy / dist) * push;
+          // ¿Ya llegó y casi parado? Sale del modo retorno.
+          const dHome = Math.hypot(b.homeX - b.x, b.homeY - b.y);
+          const speed = Math.hypot(b.vx, b.vy);
+          if (dHome < 1.2 && speed < 0.4) {
+            b.x = b.homeX;
+            b.y = b.homeY;
+            b.vx = 0;
+            b.vy = 0;
+            b.isReturning = false;
+          }
+        } else {
+          const centerX = b.x + b.width / 2;
+          const centerY = b.y + b.height / 2;
+
+          // 1. Repulsión magnética del cursor (siempre activa: sensación espacial).
+          //    Se suspende SOLO si el cursor está sobre la card, para poder
+          //    interactuar con su contenido (inputs, botones) sin que huya.
+          if (!b.isHovered) {
+            const dx = centerX - worldMouseX;
+            const dy = centerY - worldMouseY;
+            const dist = Math.hypot(dx, dy);
+            if (dist < repulsionRadius && dist > 1) {
+              const push = (1 - dist / repulsionRadius) * (repulsionStrength / b.mass);
+              b.vx += (dx / dist) * push;
+              b.vy += (dy / dist) * push;
+            }
+
+            // 2. Flotación espacial: micro-movimiento perpetuo, siempre presente.
+            const driftX = Math.sin(this.clock * 0.7 + b.driftPhase) * driftAmplitude;
+            const driftY = Math.cos(this.clock * 0.5 + b.driftPhase * 1.3) * driftAmplitude;
+            b.vx += (b.homeX + driftX - b.x) * springStiffness;
+            b.vy += (b.homeY + driftY - b.y) * springStiffness;
+          } else {
+            // 2'. En hover: muelle limpio al home (sin deriva) para estabilidad.
+            b.vx += (b.homeX - b.x) * springStiffness;
+            b.vy += (b.homeY - b.y) * springStiffness;
           }
 
-          // 2. Flotación espacial: micro-movimiento perpetuo, siempre presente.
-          const driftX = Math.sin(this.clock * 0.7 + b.driftPhase) * driftAmplitude;
-          const driftY = Math.cos(this.clock * 0.5 + b.driftPhase * 1.3) * driftAmplitude;
-          b.vx += (b.homeX + driftX - b.x) * springStiffness;
-          b.vy += (b.homeY + driftY - b.y) * springStiffness;
-        } else {
-          // 2'. En hover: muelle limpio al home (sin deriva) para estabilidad.
-          b.vx += (b.homeX - b.x) * springStiffness;
-          b.vy += (b.homeY - b.y) * springStiffness;
+          // 3. Fricción.
+          b.vx *= friction;
+          b.vy *= friction;
+
+          // 4. Integración.
+          b.x += b.vx;
+          b.y += b.vy;
         }
-
-        // 3. Fricción.
-        b.vx *= friction;
-        b.vy *= friction;
-
-        // 4. Integración.
-        b.x += b.vx;
-        b.y += b.vy;
       }
     }
 
@@ -223,8 +214,10 @@ export class PhysicsWorld {
       if (!b.element) continue;
       const tiltX = clampTilt(b.vx * 0.4);
       const tiltY = clampTilt(b.vy * 0.4);
+      // Transform SIEMPRE relativo a la posición base del DOM (baseX/baseY),
+      // no a homeX/homeY: así el Big Bang puede reubicar la home libremente.
       b.element.style.transform =
-        `translate3d(${b.x - b.homeX}px, ${b.y - b.homeY}px, 0px) ` +
+        `translate3d(${b.x - b.baseX}px, ${b.y - b.baseY}px, 0px) ` +
         `rotate(${tiltX * 0.25}deg) skewX(${tiltY * 0.1}deg)`;
     }
   }
@@ -239,8 +232,10 @@ export class PhysicsWorld {
     const bodies = this.bodies;
     for (let i = 0; i < bodies.length; i++) {
       const a = bodies[i];
+      if (a.isReturning) continue; // en reset: sin colisiones que lo desvíen
       for (let j = i + 1; j < bodies.length; j++) {
         const b = bodies[j];
+        if (b.isReturning) continue;
         // Solapamiento en cada eje.
         const overlapX = a.width / 2 + b.width / 2 - Math.abs(a.x + a.width / 2 - (b.x + b.width / 2));
         const overlapY = a.height / 2 + b.height / 2 - Math.abs(a.y + a.height / 2 - (b.y + b.height / 2));

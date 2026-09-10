@@ -41,12 +41,6 @@ export const Cursor = (p: SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-export const Explosion = (p: SVGProps<SVGSVGElement>) => (
-  <svg {...base} {...p}>
-    <path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-  </svg>
-);
-
 export const Send = (p: SVGProps<SVGSVGElement>) => (
   <svg {...base} {...p}>
     <path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
@@ -56,5 +50,11 @@ export const Send = (p: SVGProps<SVGSVGElement>) => (
 export const Close = (p: SVGProps<SVGSVGElement>) => (
   <svg {...base} {...p}>
     <path d="M6 18L18 6M6 6l12 12" />
+  </svg>
+);
+
+export const Home = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base} {...p}>
+    <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
   </svg>
 );
