@@ -23,6 +23,9 @@ export function IdentityCard({ index }: { index: number }) {
             Empuja cada letra con el cursor:
           </p>
           <MagneticName name={profile.name} />
+          <p className="mt-2 font-mono text-xs uppercase tracking-[0.3em] text-slate-500">
+            Atlas vivo del Sistema Solar
+          </p>
         </div>
 
         <h2 className="mb-4 mt-2 font-display text-xl font-medium leading-snug text-slate-200 sm:text-2xl">
@@ -36,9 +39,9 @@ export function IdentityCard({ index }: { index: number }) {
             className="flex items-center gap-2 rounded-full border border-lime-400/30 bg-lime-400/10 px-4 py-2 font-mono text-xs text-lime-300 transition hover:bg-lime-400/20"
           >
             <Home className="h-3.5 w-3.5 text-lime-400" />
-            Recomponer el cosmos
+            Recolocar los planetas
           </button>
-          <span className="font-mono text-xs text-slate-500">• Arrastra desde cualquier borde</span>
+          <span className="font-mono text-xs text-slate-500">• Arrastra el vacío para viajar por el cosmos</span>
         </div>
       </div>
     </PhysicsNode>

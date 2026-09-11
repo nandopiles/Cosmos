@@ -9,15 +9,15 @@ export function SkillsCluster({ startIndex }: { startIndex: number }) {
       <PhysicsNode id="node-skills-center" category="skills" top={1100} left={1950} width={380} index={startIndex} withAura>
         <div className="glass-panel rounded-[34px] border border-white/10 p-6">
           <div className="mb-3 flex items-center justify-between">
-            <span className="font-mono text-xs text-lime-400">HABILIDADES NUCLEARES</span>
-            <span className="font-mono text-xs text-slate-500">Campo repulsor</span>
+            <span className="font-mono text-xs text-lime-400">IDEAS PARA ENTENDER EL CIELO</span>
+            <span className="font-mono text-xs text-slate-500">Campo gravitatorio</span>
           </div>
           <p className="mb-4 text-xs leading-relaxed text-slate-400">
-            Cada nodo orbita con física de atracción centrípeta hacia este núcleo. Arrastra cualquiera para deformar la
-            constelación.
+            Cada concepto orbita este núcleo igual que un planeta orbita al Sol: atraído hacia el centro pero con
+            impulso propio. Arrastra cualquiera para deformar la constelación de ideas.
           </p>
           <div className="rounded-xl border border-lime-400/20 bg-lime-400/5 px-3 py-1.5 font-mono text-[11px] text-lime-400/80">
-            ⚡ Pasa el cursor rápido para inducir vórtice
+            ✦ Mueve el cursor rápido para agitar la nube estelar
           </div>
         </div>
       </PhysicsNode>

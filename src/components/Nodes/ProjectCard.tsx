@@ -50,7 +50,7 @@ export function ProjectCard({ project, index, onOpen }: ProjectCardProps) {
           )}
           <ProjectGraphic graphic={project.graphic} />
           <div className="absolute bottom-3 right-3 rounded bg-black/60 px-2 py-0.5 font-mono text-[10px] text-slate-400">
-            Haz clic para expandir
+            Haz clic para ver la ficha
           </div>
         </div>
 

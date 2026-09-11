@@ -22,10 +22,10 @@ export function Toolbar({ flashlightActive, onToggleFlashlight }: ToolbarProps) 
           click(340);
         }}
         className={`glass-btn flex items-center gap-2 rounded-full px-3.5 py-2 font-mono text-xs shadow-lg ${flashlightActive ? 'is-active' : ''}`}
-        title="Alternar modo linterna exploratoria"
+        title="Alternar el telescopio que ilumina el cielo oscuro"
       >
         <Bulb className="h-4 w-4" />
-        <span className="hidden sm:inline">Linterna</span>
+        <span className="hidden sm:inline">Telescopio</span>
       </button>
 
       <button
@@ -40,7 +40,7 @@ export function Toolbar({ flashlightActive, onToggleFlashlight }: ToolbarProps) 
       <button
         onClick={resetLayout}
         className="glass-btn flex items-center gap-2 rounded-full px-3.5 py-2 font-mono text-xs shadow-lg"
-        title="Reset: devuelve las cards a su posición original"
+        title="Recolocar: devuelve los cuerpos a su órbita original"
       >
         <Home className="h-3.5 w-3.5" />
         <span className="hidden sm:inline">Reset</span>

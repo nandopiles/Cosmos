@@ -55,7 +55,6 @@ export const PARTICLES = {
 /** Puntos de teleport en coordenadas de mundo. */
 export const TELEPORT_POINTS = {
   hero: { x: 2140, y: 1900 },
-  projects: { x: 1370, y: 1600 },
   skills: { x: 2140, y: 1180 },
   about: { x: 1310, y: 2050 },
   contact: { x: 2850, y: 1950 },
