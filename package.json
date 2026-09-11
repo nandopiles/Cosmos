@@ -1,9 +1,9 @@
 {
-  "name": "portfolio-espacio-vivo",
+  "name": "cosmos",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Portfolio interactivo — lienzo infinito con motor de física, audio generativo y navegación espacial.",
+  "description": "Cosmos — atlas vivo del Sistema Solar: lienzo infinito con motor de física, audio generativo y navegación espacial.",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
