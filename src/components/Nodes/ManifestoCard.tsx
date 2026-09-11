@@ -9,7 +9,7 @@ export function ManifestoCard({ index }: { index: number }) {
       <div className="glass-panel relative overflow-hidden rounded-[44px] p-8 md:p-9">
         <div className="mb-4 flex items-center gap-3">
           <span className="h-3 w-3 rounded-full bg-purple-400" />
-          <span className="font-mono text-xs tracking-wider text-purple-300">MANIFIESTO // LEYES DE MOVIMIENTO</span>
+          <span className="font-mono text-xs tracking-wider text-purple-300">POR QUÉ MIRAR AL CIELO // NUESTRO ORIGEN</span>
         </div>
 
         <h3 className="mb-4 font-display text-2xl font-bold leading-tight text-white">{profile.manifestoQuote}</h3>

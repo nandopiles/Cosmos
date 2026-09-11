@@ -33,7 +33,7 @@ export function ProjectModal({ openId, onClose }: ProjectModalProps) {
       className={`morph-modal ${openId ? 'is-active' : ''}`}
       role="dialog"
       aria-modal="true"
-      aria-label={project?.title ?? 'Detalle de proyecto'}
+      aria-label={project?.title ?? 'Ficha del cuerpo celeste'}
     >
       <div className="morph-backdrop" onClick={onClose} />
       <div className="morph-sheet glass-panel border border-white/15 p-10 shadow-2xl sm:p-14">
@@ -57,7 +57,7 @@ export function ProjectModal({ openId, onClose }: ProjectModalProps) {
             <p className="max-w-2xl text-base leading-relaxed text-slate-300">{project.description}</p>
 
             <div className="space-y-3 rounded-3xl border border-white/10 bg-white/5 p-6">
-              <h4 className="font-mono text-xs uppercase tracking-widest text-slate-400">Innovaciones Técnicas</h4>
+              <h4 className="font-mono text-xs uppercase tracking-widest text-slate-400">Datos que asombran</h4>
               <ul className="space-y-2 text-sm text-slate-200">
                 {project.features.map((f) => (
                   <li key={f} className="flex items-start gap-2.5">
@@ -81,14 +81,17 @@ export function ProjectModal({ openId, onClose }: ProjectModalProps) {
                   onClick={onClose}
                   className="rounded-full bg-white/10 px-5 py-2.5 font-mono text-xs text-white transition hover:bg-white/20"
                 >
-                  Volver al Lienzo
+                  Volver al mapa
                 </button>
-                <button
+                <a
+                  href="https://science.nasa.gov/solar-system/"
+                  target="_blank"
+                  rel="noreferrer"
                   onClick={() => audioEngine.microClick(700, 'sine', 0.1, 0.2)}
                   className="rounded-full bg-lime-400 px-6 py-2.5 font-display text-xs font-bold text-slate-950 shadow-lg transition hover:bg-lime-300"
                 >
-                  Ejecutar Demo en Vivo ↗
-                </button>
+                  Explorar en la NASA ↗
+                </a>
               </div>
             </div>
           </div>

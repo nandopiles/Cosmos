@@ -9,11 +9,10 @@ interface Pill {
 }
 
 const PILLS: Pill[] = [
-  { target: 'hero', label: 'Identidad', dot: 'bg-lime-400', hover: 'hover:text-lime-300' },
-  { target: 'projects', label: 'Proyectos', dot: 'bg-sky-400', hover: 'hover:text-sky-300' },
-  { target: 'skills', label: 'Físicas / Lab', dot: 'bg-amber-400', hover: 'hover:text-amber-300' },
-  { target: 'about', label: 'Manifiesto', dot: 'bg-purple-400', hover: 'hover:text-purple-300' },
-  { target: 'contact', label: 'Contacto', dot: 'bg-rose-400', hover: 'hover:text-rose-300' },
+  { target: 'hero', label: 'Inicio', dot: 'bg-lime-400', hover: 'hover:text-lime-300' },
+  { target: 'skills', label: 'Conceptos', dot: 'bg-amber-400', hover: 'hover:text-amber-300' },
+  { target: 'about', label: 'Nuestro origen', dot: 'bg-purple-400', hover: 'hover:text-purple-300' },
+  { target: 'contact', label: '¿Sabías que…?', dot: 'bg-rose-400', hover: 'hover:text-rose-300' },
 ];
 
 /** Navegación rápida por teleport (abajo-izquierda). */

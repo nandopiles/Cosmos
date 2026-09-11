@@ -19,7 +19,7 @@ export function StatusBar() {
           <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-lime-400" />
         </span>
         <span className="font-mono text-xs font-medium uppercase tracking-wider text-slate-300">
-          ESPACIO VIVO <span className="font-semibold text-lime-400">v3.4</span>
+          COSMOS <span className="font-semibold text-lime-400">en órbita</span>
         </span>
         <span className="text-slate-600">|</span>
         <span className="font-mono text-xs text-slate-400">
@@ -31,7 +31,7 @@ export function StatusBar() {
 
       <div className="glass-panel hidden items-center gap-2 rounded-full px-3.5 py-2 text-xs text-slate-400 md:flex">
         <Cursor className="h-3.5 w-3.5 text-lime-400" />
-        <span>Toca, arrastra y lanza elementos · Arrastra el fondo para explorar</span>
+        <span>Empuja y lanza los planetas · Arrastra el vacío para viajar por el cosmos</span>
       </div>
     </div>
   );

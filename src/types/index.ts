@@ -68,7 +68,7 @@ export interface CameraState {
 }
 
 /** Destinos de teleport del HUD. */
-export type TeleportTarget = 'hero' | 'projects' | 'skills' | 'about' | 'contact';
+export type TeleportTarget = 'hero' | 'skills' | 'about' | 'contact';
 
 /** Datos de un proyecto del portfolio. */
 export interface Project {

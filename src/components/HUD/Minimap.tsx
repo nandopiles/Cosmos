@@ -65,7 +65,7 @@ export function Minimap() {
       <canvas ref={canvasRef} className="minimap-canvas" />
       <div ref={cameraBoxRef} className="minimap-camera" />
       <div className="pointer-events-none absolute bottom-2 left-3 rounded bg-slate-900/80 px-1.5 py-0.5 font-mono text-[10px] text-slate-400">
-        Radar 2D
+        Carta estelar
       </div>
     </div>
   );
